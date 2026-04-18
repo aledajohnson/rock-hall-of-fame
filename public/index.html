@@ -111,12 +111,22 @@ html, body { background: var(--bg); color: var(--white); font-family: 'Inter', s
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: #000; }
 ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.sound-banner { position: fixed; top: 52px; left: 50%; transform: translateX(-50%); background: var(--yellow); color: #000; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.4rem 1.1rem 0.4rem 0.9rem; border-radius: 0 0 8px 8px; z-index: 100; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; transition: opacity 0.5s, transform 0.5s; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.sound-banner.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(-8px); }
+.sound-banner-x { font-size: 0.8rem; opacity: 0.6; line-height: 1; }
 </style>
 </head>
 <body>
 
+<audio id="rock-audio" src="i-wanna-rock.mp3" preload="auto"></audio>
+<div class="sound-banner" id="sound-banner" onclick="startMusic()">
+  🔊 Sound On
+  <span class="sound-banner-x" onclick="dismissBanner(event)">✕</span>
+</div>
+
 <header class="site-header">
-  <div class="site-logo">ROCK&<br><span>HALL</span> OF FAME</div>
+  <div class="site-logo">ROCK<br><span>HALL</span> OF FAME</div>
   <button class="induct-btn" onclick="showSubmit()">+ Induct a Rock</button>
 </header>
 
@@ -366,6 +376,16 @@ function showStatus(msg, type) {
   const el = document.getElementById('status-msg');
   el.textContent = msg; el.className = 'status-msg status-'+type; el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 5000);
+}
+
+function startMusic() {
+  const audio = document.getElementById('rock-audio');
+  audio.play();
+  dismissBanner();
+}
+function dismissBanner(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('sound-banner').classList.add('hidden');
 }
 
 function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
