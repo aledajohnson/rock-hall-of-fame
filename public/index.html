@@ -60,7 +60,11 @@ html, body { background: var(--bg); color: var(--white); font-family: 'Inter', s
 .detail-panel { background: #111; border: 1px solid #2a2a2a; border-radius: 12px; max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto; transform: translateY(16px) scale(0.97); transition: transform 0.25s; box-shadow: 0 40px 80px rgba(0,0,0,0.8); }
 .overlay.open .detail-panel { transform: translateY(0) scale(1); }
 .panel-img-wrap { position: relative; overflow: hidden; border-radius: 12px 12px 0 0; background: #1a1a1a; }
-.panel-img-wrap img { width: 100%; display: block; max-height: 300px; object-fit: contain; object-position: center; padding: 1.5rem; }
+.panel-img-wrap img { width: 100%; display: block; max-height: 300px; object-fit: contain; object-position: center; padding: 1.5rem; cursor: zoom-in; }
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 400; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out; }
+.lightbox.open { opacity: 1; pointer-events: all; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; transform: scale(0.95); transition: transform 0.2s; }
+.lightbox.open img { transform: scale(1); }
 .panel-emoji { width: 100%; padding: 3rem 1rem; text-align: center; font-size: 6rem; line-height: 1; }
 .panel-close-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.6); border: 1px solid #333; color: var(--white); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
 .panel-close-btn:hover { background: #333; }
@@ -147,6 +151,10 @@ html, body { background: var(--bg); color: var(--white); font-family: 'Inter', s
     <div class="panel-img-wrap" id="panel-img-wrap"></div>
     <div class="panel-body" id="panel-body"></div>
   </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
 </div>
 
 <div class="submit-overlay" id="submit-overlay" onclick="maybeCloseSubmit(event)">
@@ -242,7 +250,7 @@ function openDetail(id) {
   const imgWrap = document.getElementById('panel-img-wrap');
   imgWrap.innerHTML = `<button class="panel-close-btn" onclick="closeDetail()">✕</button>`;
   if (s.image_url) {
-    imgWrap.innerHTML += `<img src="${s.image_url}" alt="${esc(s.name)}">`;
+    imgWrap.innerHTML += `<img src="${s.image_url}" alt="${esc(s.name)}" onclick="openLightbox('${s.image_url}', '${esc(s.name)}')">`;
   } else {
     imgWrap.innerHTML += `<div class="panel-emoji">${s.emoji||'🪨'}</div>`;
   }
@@ -374,6 +382,16 @@ function showStatus(msg, type) {
   const el = document.getElementById('status-msg');
   el.textContent = msg; el.className = 'status-msg status-'+type; el.style.display = 'block';
   setTimeout(() => el.style.display = 'none', 5000);
+}
+
+function openLightbox(url, alt) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  img.src = url; img.alt = alt;
+  lb.classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
 }
 
 function startMusic() {
