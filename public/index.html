@@ -218,7 +218,6 @@ async function loadRocks() {
 function renderGrid() {
   const grid = document.getElementById('rock-grid');
   document.getElementById('rock-count').textContent = specimens.length;
-  const aspects = ['3/2','1/1','2/3','3/4'];
   let html = '';
   if (specimens.length === 0) {
     html += `<div class="empty-state"><p>The collection is empty.<br><strong>Be the first to induct a rock!</strong></p></div>`;
@@ -226,8 +225,7 @@ function renderGrid() {
   for (const s of specimens) {
     html += `<div class="rock-card" onclick="openDetail('${s.id}')">`;
     if (s.image_url) {
-      const asp = aspects[s.id.charCodeAt(s.id.length-1) % aspects.length];
-      html += `<div class="card-img-wrap" style="aspect-ratio:${asp}"><img src="${s.image_url}" alt="${esc(s.name)}" loading="lazy"></div>`;
+      html += `<div class="card-img-wrap" style="aspect-ratio:4/3"><img src="${s.image_url}" alt="${esc(s.name)}" loading="lazy"></div>`;
     } else {
       html += `<div class="card-emoji-placeholder">${s.emoji||'🪨'}</div>`;
     }
