@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --card-bg: #111; --card-border: #222;
+  --yellow: #f0e614; --white: #ffffff; --gray: #888; --gray-light: #aaa;
+  --tag-bg: rgba(255,255,255,0.08); --tag-border: rgba(255,255,255,0.18);
+  --red: #e04040;
+}
+html, body { background: var(--bg); color: var(--white); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+.site-header { background: #000; border-bottom: 1px solid #1a1a1a; padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 52px; position: sticky; top: 0; z-index: 50; }
+.site-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 0.05em; color: var(--white); line-height: 1.1; }
+.site-logo span { color: var(--yellow); }
+.induct-btn { background: transparent; border: 1.5px solid var(--yellow); color: var(--yellow); font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.15s; }
+.induct-btn:hover { background: var(--yellow); color: #000; }
+
+.hero { padding: 2.5rem 1.5rem 1.8rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 10vw, 6rem); line-height: 0.9; letter-spacing: 0.02em; }
+.hero-title .explore { color: var(--yellow); display: block; }
+.hero-title .rest { color: var(--white); display: block; }
+.count-badge { font-size: 0.72rem; color: var(--gray); letter-spacing: 0.05em; align-self: flex-end; padding-bottom: 0.25rem; }
+.count-badge span { color: var(--yellow); font-weight: 600; }
+
+.grid-wrap { padding: 0 1.5rem 2rem; columns: 4; column-gap: 0.75rem; }
+@media (max-width: 900px) { .grid-wrap { columns: 3; } }
+@media (max-width: 600px) { .grid-wrap { columns: 2; } }
+
+.loading-state { text-align: center; padding: 4rem 1rem; color: var(--gray); font-size: 0.85rem; letter-spacing: 0.05em; column-span: all; }
+.spinner { width: 28px; height: 28px; border: 2px solid #222; border-top-color: var(--yellow); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--gray); column-span: all; }
+.empty-state p { font-size: 0.9rem; line-height: 1.7; }
+.empty-state strong { color: var(--gray-light); }
+
+.rock-card { break-inside: avoid; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; margin-bottom: 0.75rem; cursor: pointer; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; display: block; }
+.rock-card:hover { transform: translateY(-3px); border-color: #444; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+.card-img-wrap { position: relative; overflow: hidden; background: #1a1a1a; }
+.card-img-wrap img { width: 100%; display: block; object-fit: cover; transition: transform 0.3s; }
+.rock-card:hover .card-img-wrap img { transform: scale(1.04); }
+.card-emoji-placeholder { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 4rem; background: #1a1a1a; transition: transform 0.3s; }
+.rock-card:hover .card-emoji-placeholder { transform: scale(1.06); }
+.card-body { padding: 0.65rem 0.75rem 0.75rem; }
+.card-name { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--white); margin-bottom: 0.35rem; line-height: 1.2; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.card-tag { background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 100px; padding: 0.15rem 0.55rem; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-light); white-space: nowrap; }
+.card-tag.yellow { background: rgba(240,230,20,0.12); border-color: rgba(240,230,20,0.3); color: var(--yellow); }
+
+.add-rock-card { break-inside: avoid; background: transparent; border: 1.5px dashed #2a2a2a; border-radius: 10px; margin-bottom: 0.75rem; aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: border-color 0.2s, background 0.2s; color: #444; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+.add-rock-card:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(240,230,20,0.04); }
+.add-rock-card .plus { font-size: 2rem; font-weight: 300; line-height: 1; }
+
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+.overlay.open { opacity: 1; pointer-events: all; }
+.detail-panel { background: #111; border: 1px solid #2a2a2a; border-radius: 12px; max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto; transform: translateY(16px) scale(0.97); transition: transform 0.25s; box-shadow: 0 40px 80px rgba(0,0,0,0.8); }
+.overlay.open .detail-panel { transform: translateY(0) scale(1); }
+.panel-img-wrap { position: relative; overflow: hidden; border-radius: 12px 12px 0 0; background: #1a1a1a; }
+.panel-img-wrap img { width: 100%; display: block; max-height: 300px; object-fit: contain; object-position: center; padding: 1.5rem; }
+.panel-emoji { width: 100%; padding: 3rem 1rem; text-align: center; font-size: 6rem; line-height: 1; }
+.panel-close-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.6); border: 1px solid #333; color: var(--white); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.panel-close-btn:hover { background: #333; }
+.panel-body { padding: 1.25rem 1.5rem 1.5rem; }
+.panel-name { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.04em; color: var(--white); line-height: 1; margin-bottom: 0.5rem; }
+.panel-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.1rem; }
+.panel-section-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.5rem; margin-top: 1rem; }
+.panel-story { font-size: 0.9rem; color: #ccc; line-height: 1.65; font-style: italic; }
+.panel-meta { display: flex; flex-direction: column; gap: 0.3rem; }
+.meta-row { display: flex; gap: 0.75rem; font-size: 0.82rem; }
+.meta-label { color: var(--gray); min-width: 68px; }
+.meta-value { color: var(--gray-light); }
+.geologist-box { background: #0f0f0f; border: 1px solid #222; border-left: 3px solid var(--yellow); border-radius: 0 6px 6px 0; padding: 0.75rem 1rem; font-size: 0.85rem; line-height: 1.65; color: #ccc; margin-top: 0.5rem; }
+.rock-type-badge { display: inline-block; background: rgba(240,230,20,0.12); border: 1px solid rgba(240,230,20,0.3); border-radius: 100px; padding: 0.15rem 0.6rem; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--yellow); margin-left: 0.5rem; }
+
+.delete-btn { width: 100%; margin-top: 1.5rem; background: transparent; border: 1px solid #2a2a2a; color: #555; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.6rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.delete-btn:hover { border-color: var(--red); color: var(--red); background: rgba(224,64,64,0.06); }
+.delete-btn.confirming { border-color: var(--red); color: var(--red); background: rgba(224,64,64,0.1); }
+
+.loading-dots::after { content: ''; animation: dots 1.5s infinite; }
+@keyframes dots { 0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'} }
+
+.submit-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+.submit-overlay.open { opacity: 1; pointer-events: all; }
+.submit-panel { background: #111; border: 1px solid #222; border-radius: 12px; max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.25s; box-shadow: 0 40px 80px rgba(0,0,0,0.8); }
+.submit-overlay.open .submit-panel { transform: translateY(0); }
+.submit-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+.submit-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; color: var(--white); }
+.submit-body { padding: 1.25rem 1.5rem 1.5rem; }
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.4rem; }
+.form-input, .form-textarea { width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.85rem; padding: 0.55rem 0.75rem; border-radius: 6px; outline: none; transition: border-color 0.15s; }
+.form-input:focus, .form-textarea:focus { border-color: var(--yellow); }
+.form-input::placeholder, .form-textarea::placeholder { color: #444; }
+.form-textarea { min-height: 80px; resize: vertical; }
+.upload-zone { border: 1.5px dashed #2a2a2a; border-radius: 8px; padding: 1.2rem; text-align: center; cursor: pointer; position: relative; transition: border-color 0.15s, background 0.15s; background: #0a0a0a; }
+.upload-zone:hover { border-color: var(--yellow); background: rgba(240,230,20,0.03); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-label { font-size: 0.78rem; color: #555; }
+.upload-label strong { color: var(--gray-light); }
+.preview-img { max-width: 120px; max-height: 120px; object-fit: contain; margin: 0.75rem auto 0; display: block; border-radius: 6px; }
+.form-submit-btn { width: 100%; background: var(--yellow); border: none; color: #000; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.8rem; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; margin-top: 0.25rem; }
+.form-submit-btn:hover { opacity: 0.88; }
+.form-submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.status-msg { font-size: 0.8rem; text-align: center; padding: 0.5rem; margin-top: 0.5rem; border-radius: 6px; display: none; }
+.status-success { background: rgba(0,200,100,0.1); border: 1px solid rgba(0,200,100,0.2); color: #4eca8b; }
+.status-error { background: rgba(255,60,60,0.1); border: 1px solid rgba(255,60,60,0.2); color: #ff6b6b; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-logo">ROCK&<br><span>HALL</span> OF FAME</div>
+  <button class="induct-btn" onclick="showSubmit()">+ Induct a Rock</button>
+</header>
+
+<div class="hero">
+  <div class="hero-title">
+    <span class="explore">EXPLORE</span>
+    <span class="rest">THE ROCK<br>HALL OF FAME</span>
+  </div>
+  <div class="count-badge">The collection: <span id="rock-count">0</span> specimens</div>
+</div>
+
+<div class="grid-wrap" id="rock-grid">
+  <div class="loading-state"><div class="spinner"></div>Loading the collection…</div>
+</div>
+
+<div class="overlay" id="detail-overlay" onclick="maybeCloseDetail(event)">
+  <div class="detail-panel">
+    <div class="panel-img-wrap" id="panel-img-wrap"></div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+</div>
+
+<div class="submit-overlay" id="submit-overlay" onclick="maybeCloseSubmit(event)">
+  <div class="submit-panel">
+    <div class="submit-header">
+      <div class="submit-title">Induct a Rock</div>
+      <button class="panel-close-btn" style="position:static;background:#1a1a1a;" onclick="closeSubmit()">✕</button>
+    </div>
+    <div class="submit-body">
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input type="text" class="form-input" id="f-name" placeholder="e.g. Aunt Margaret">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rock Name</label>
+        <input type="text" class="form-input" id="f-rock-name" placeholder="e.g. The Lucky Pebble">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Where was it found?</label>
+        <input type="text" class="form-input" id="f-location" placeholder="e.g. Bodega Bay, CA">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Story</label>
+        <textarea class="form-textarea" id="f-story" placeholder="Tell us about this rock..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photo</label>
+        <div class="upload-zone">
+          <input type="file" id="f-photo" accept="image/*" onchange="previewPhoto(this)">
+          <div class="upload-label">📷 <strong>Choose a photo</strong> or drag it here</div>
+          <img id="photo-preview" class="preview-img" style="display:none;">
+        </div>
+      </div>
+      <button class="form-submit-btn" id="submit-btn" onclick="submitRock()">Induct into the Hall →</button>
+      <div class="status-msg" id="status-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let specimens = [], activeId = null, deleteConfirming = false;
+let photoData = null, photoMime = null;
+
+async function apiGet(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+async function apiPost(path, body) {
+  const res = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+async function apiDelete(path, body) {
+  const res = await fetch(path, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function loadRocks() {
+  try {
+    specimens = await apiGet('/api/rocks-get');
+    renderGrid();
+  } catch(e) {
+    document.getElementById('rock-grid').innerHTML = `<div class="empty-state"><p>Could not load the collection.<br><strong>Make sure the site is deployed on Netlify.</strong></p></div>`;
+  }
+}
+
+function renderGrid() {
+  const grid = document.getElementById('rock-grid');
+  document.getElementById('rock-count').textContent = specimens.length;
+  const aspects = ['3/2','1/1','2/3','3/4'];
+  let html = '';
+  if (specimens.length === 0) {
+    html += `<div class="empty-state"><p>The collection is empty.<br><strong>Be the first to induct a rock!</strong></p></div>`;
+  }
+  for (const s of specimens) {
+    html += `<div class="rock-card" onclick="openDetail('${s.id}')">`;
+    if (s.image_url) {
+      const asp = aspects[s.id.charCodeAt(s.id.length-1) % aspects.length];
+      html += `<div class="card-img-wrap" style="aspect-ratio:${asp}"><img src="${s.image_url}" alt="${esc(s.name)}" loading="lazy"></div>`;
+    } else {
+      html += `<div class="card-emoji-placeholder">${s.emoji||'🪨'}</div>`;
+    }
+    html += `<div class="card-body"><div class="card-name">${esc(s.name)}</div><div class="card-tags"><span class="card-tag">${esc(s.location)}</span><span class="card-tag yellow">${esc(s.submitter)}</span></div></div></div>`;
+  }
+  html += `<div class="add-rock-card" onclick="showSubmit()"><div class="plus">+</div><span>Induct a Rock</span></div>`;
+  grid.innerHTML = html;
+}
+
+function openDetail(id) {
+  const s = specimens.find(x => x.id === id);
+  if (!s) return;
+  activeId = id; deleteConfirming = false;
+  const imgWrap = document.getElementById('panel-img-wrap');
+  imgWrap.innerHTML = `<button class="panel-close-btn" onclick="closeDetail()">✕</button>`;
+  if (s.image_url) {
+    imgWrap.innerHTML += `<img src="${s.image_url}" alt="${esc(s.name)}">`;
+  } else {
+    imgWrap.innerHTML += `<div class="panel-emoji">${s.emoji||'🪨'}</div>`;
+  }
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-name">${esc(s.name)}</div>
+    <div class="panel-tags">
+      <span class="card-tag">${esc(s.location)}</span>
+      <span class="card-tag yellow">${esc(s.submitter)}</span>
+      ${s.aiType ? `<span class="card-tag">${esc(s.aiType)}</span>` : ''}
+    </div>
+    <div class="panel-section-title">Donor's Story</div>
+    <div class="panel-story">"${esc(s.story)}"</div>
+    <div class="panel-section-title">AI Geologist${s.aiType ? `<span class="rock-type-badge">${esc(s.aiType)}</span>` : ''}</div>
+    <div class="geologist-box" id="geologist-text">
+      ${s.aiAnalysis ? esc(s.aiAnalysis) : '<span style="color:#555;">Analysing specimen<span class="loading-dots"></span></span>'}
+    </div>
+    <div class="panel-section-title" style="margin-top:1rem;">Provenance</div>
+    <div class="panel-meta">
+      <div class="meta-row"><span class="meta-label">Donated by</span><span class="meta-value">${esc(s.submitter)}</span></div>
+      <div class="meta-row"><span class="meta-label">Found at</span><span class="meta-value">${esc(s.location)}</span></div>
+      <div class="meta-row"><span class="meta-label">Inducted</span><span class="meta-value">${new Date(s.timestamp).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</span></div>
+    </div>
+    <button class="delete-btn" id="delete-btn" onclick="handleDelete('${s.id}')">Remove from Collection</button>`;
+  document.getElementById('detail-overlay').classList.add('open');
+  if (!s.aiAnalysis) fetchGeologist(s);
+}
+
+function maybeCloseDetail(e) { if (e.target === document.getElementById('detail-overlay')) closeDetail(); }
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); activeId = null; deleteConfirming = false; }
+
+async function handleDelete(id) {
+  const btn = document.getElementById('delete-btn');
+  if (!deleteConfirming) {
+    deleteConfirming = true;
+    btn.textContent = 'Are you sure? Click again to confirm';
+    btn.classList.add('confirming');
+    setTimeout(() => {
+      if (deleteConfirming && btn) { deleteConfirming = false; btn.textContent = 'Remove from Collection'; btn.classList.remove('confirming'); }
+    }, 4000);
+    return;
+  }
+  btn.textContent = 'Removing…'; btn.disabled = true;
+  try {
+    await apiDelete('/api/rocks-delete', { id });
+    specimens = specimens.filter(s => s.id !== id);
+    closeDetail(); renderGrid();
+  } catch(e) {
+    btn.textContent = 'Error — try again'; btn.disabled = false; deleteConfirming = false;
+  }
+}
+
+async function fetchGeologist(specimen) {
+  try {
+    const prompt = `You are a geologist at an interactive museum exhibit. Your job is to make people fall in love with rocks. ${specimen.image_url ? "Examine the photo carefully." : `This rock is named "${specimen.name}" and was found in "${specimen.location}".`} Make your best guess at the rock type — be confident and commit to an answer. Then write 2-3 sentences that would make a random person stop and go "whoa, that's actually cool" — think Bill Nye meets a museum exhibit, not a textbook. No jargon without a simple explanation, no hedging phrases like "without physical tests" or "it could be". Respond ONLY with JSON, no markdown: {"type":"...","fact":"..."}`;
+    const messages = specimen.image_url
+      ? [{role:'user', content:[{type:'image',source:{type:'url',url:specimen.image_url}},{type:'text',text:prompt}]}]
+      : [{role:'user', content:prompt}];
+    const data = await apiPost('/api/analyze', { messages });
+    const text = data.content?.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(text);
+    specimen.aiType = parsed.type; specimen.aiAnalysis = parsed.fact;
+    await apiPost('/api/rocks-save', specimen);
+    if (activeId === specimen.id) {
+      const el = document.getElementById('geologist-text');
+      if (el) el.innerHTML = esc(parsed.fact);
+    }
+    renderGrid();
+  } catch(e) {
+    if (activeId === specimen.id) {
+      const el = document.getElementById('geologist-text');
+      if (el) el.innerHTML = '<em style="color:#555">Analysis unavailable — check that your API key is configured.</em>';
+    }
+  }
+}
+
+function showSubmit() { document.getElementById('submit-overlay').classList.add('open'); }
+function maybeCloseSubmit(e) { if (e.target === document.getElementById('submit-overlay')) closeSubmit(); }
+function closeSubmit() { document.getElementById('submit-overlay').classList.remove('open'); }
+
+function previewPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  photoMime = 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      else if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      photoData = canvas.toDataURL('image/jpeg', 0.8);
+      const p = document.getElementById('photo-preview');
+      p.src = photoData; p.style.display = 'block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitRock() {
+  const name = document.getElementById('f-name').value.trim();
+  const rockName = document.getElementById('f-rock-name').value.trim();
+  const location = document.getElementById('f-location').value.trim();
+  const story = document.getElementById('f-story').value.trim();
+  if (!name || !rockName || !location || !story) { showStatus('Please fill in all fields.', 'error'); return; }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Inducting…';
+  const s = { id:'rock-'+Date.now(), name:rockName, submitter:name, location, story, emoji:'🪨', imageData:photoData||null, mimeType:photoMime||'image/jpeg', aiAnalysis:null, aiType:null, timestamp:Date.now() };
+  try {
+    await apiPost('/api/rocks-save', s);
+    await loadRocks();
+    ['f-name','f-rock-name','f-location','f-story'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-photo').value = '';
+    document.getElementById('photo-preview').style.display = 'none';
+    photoData = null; photoMime = null;
+    btn.disabled = false; btn.textContent = 'Induct into the Hall →';
+    showStatus('Rock inducted! Opening the record…', 'success');
+    setTimeout(() => { closeSubmit(); setTimeout(() => openDetail(s.id), 300); }, 1400);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Induct into the Hall →';
+    showStatus('Something went wrong — please try again.', 'error');
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg; el.className = 'status-msg status-'+type; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+loadRocks();
+</script>
+</body>
+</html>
