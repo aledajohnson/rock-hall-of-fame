@@ -2,7 +2,7 @@ exports.handler = async (event) => {
   const headers = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
   try {
     const res = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/rocks?order=timestamp.desc`,
+      `${process.env.SUPABASE_URL}/rest/v1/rocks?order=name.asc`,
       {
         headers: {
           'apikey': process.env.SUPABASE_SERVICE_KEY,
